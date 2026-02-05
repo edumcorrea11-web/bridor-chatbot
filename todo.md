@@ -124,3 +124,19 @@
 - [x] Usuário precisa digitar "Pedido" por extenso para funcionar
 - [x] LLM está interpretando "1" como mal-entendido ao invés de escolha válida
 - [x] Ajustar prompt para ser mais permissivo com respostas numéricas curtas no contexto de menu
+
+## Bugs Críticos Urgentes
+
+### Bug 1 - "1" AINDA não reconhecido (correção anterior falhou)
+- [x] Bot continua pedindo para digitar "1 ou 2" mesmo quando usuário digita "1"
+- [x] Correção anterior no prompt não surtiu efeito
+- [x] Investigar se há outro lugar no código que valida a resposta
+- [x] Considerar abordagem diferente (detecção programática ao invés de prompt)
+- [x] Implementada detecção programática que intercepta "1" e "2" antes do LLM
+
+### Bug 2 - Resumo sem produtos
+- [x] Cliente listou: "1 croissant g, 3 croissant mini, 4 caracol de canela"
+- [x] Resumo mostrou apenas: "Estabelecimento: Zezé lanches / Dia 15 após as 10:00"
+- [x] Parser não está extraindo os produtos da mensagem do cliente
+- [x] Resumo incompleto impede Maria Luiza de processar o pedido
+- [x] Implementado parser de formato livre que detecta listas de produtos

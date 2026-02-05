@@ -215,6 +215,8 @@ Diretrizes:
             .map(msg => msg.content);
           
           // Tentar extrair informações estruturadas
+          let produtoLivre = ""; // Produtos em formato livre (lista)
+          
           for (const message of customerMessages) {
             const lines = message.split(/\n/);
             for (const line of lines) {
@@ -235,6 +237,16 @@ Diretrizes:
                   dataEntrega = tempData;
                 }
               }
+            }
+            
+            // Detectar formato livre: mensagem com produtos listados (ex: "2 croissant, 3 pães")
+            const lowerMsg = message.toLowerCase();
+            if (!produtoLivre && message.length > 10 && message.length < 500 &&
+                !lowerMsg.includes("estabelecimento") && !lowerMsg.includes("cnpj") &&
+                !lowerMsg.includes("zezé") && !lowerMsg.includes("lanches") &&
+                (lowerMsg.match(/\d+\s*\w+/) || lowerMsg.includes(","))) {
+              // Mensagem parece conter lista de produtos
+              produtoLivre = message.trim();
             }
           }
           
@@ -262,7 +274,10 @@ Diretrizes:
           // Montar resumo estruturado
           const identificacao = cnpj ? `🏢 CNPJ: ${cnpj}` : (estabelecimento ? `🏢 Estabelecimento: ${estabelecimento}` : "");
           
-          if (produto || quantidade || dataEntrega) {
+          // Priorizar formato livre se detectado
+          if (produtoLivre) {
+            orderInfo = `${identificacao ? identificacao + "\n" : ""}📦 Produtos: ${produtoLivre}${dataEntrega ? "\n📅 Data de Entrega: " + dataEntrega : ""}`;
+          } else if (produto || quantidade || dataEntrega) {
             orderInfo = `${identificacao ? identificacao + "\n" : ""}📦 Produto: ${produto || "Não informado"}\n🔢 Quantidade: ${quantidade || "Não informada"}\n📅 Data de Entrega: ${dataEntrega || "Não informada"}`;
           } else {
             // Fallback: usar última mensagem relevante
@@ -312,6 +327,30 @@ Diretrizes:
         // Detectar se é cliente existente ou prospect na primeira resposta
         const lowerContent = input.content.toLowerCase();
         const lowerBotResponse = botResponse.toLowerCase();
+        
+        // DETECÇÃO PROGRAMÁTICA: Se cliente existente já confirmado e responde "1" ou "2" no menu
+        if (conversation.isExistingCustomer === true && !conversation.transferredToAgent) {
+          const trimmedContent = input.content.trim();
+          
+          // Se responder apenas "1" -> Forçar fluxo de pedido
+          if (trimmedContent === "1" || lowerContent === "pedido" || lowerContent === "fazer pedido") {
+            botResponse = "Entendi! Para localizar seu cadastro, por favor me informe o nome do seu estabelecimento ou CNPJ.";
+            messageType = "text";
+          }
+          // Se responder apenas "2" -> Forçar transferência
+          else if (trimmedContent === "2" || lowerContent === "assistente" || lowerContent.includes("falar com")) {
+            botResponse = "Perfeito! Vou transferir você para Maria Luiza, nossa assistente de vendas, que vai te atender. Aguarde um momento... 👩‍💼";
+            messageType = "system";
+            newCategory = "order";
+            shouldUpdateCategory = true;
+            
+            await updateConversation(conversation.id, {
+              status: "transferred",
+              transferredToAgent: true,
+              category: newCategory,
+            });
+          }
+        }
         
         // Se o usuário responde que é cliente existente
         if (conversation.isExistingCustomer === null) {
