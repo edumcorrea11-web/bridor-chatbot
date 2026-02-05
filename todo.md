@@ -187,3 +187,8 @@
 - [ ] Mensagens confusas ou repetitivas
 - [ ] Problemas de formatação
 - [ ] Erros de salvamento no banco de dados
+
+
+## Bug Reportado - Parser de Data Simples
+
+- [x] Parser de data não reconhece formato simples "13/02" - precisa aceitar datas sem palavras adicionais como "dia", "às", etc.

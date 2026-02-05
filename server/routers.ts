@@ -108,8 +108,8 @@ FLUXO DE QUALIFICAÇÃO:1. PRIMEIRA PERGUNTA: "Você já é cliente da Bridor?"\
         📅 Data de entrega desejada:
         
         Assim que receber, o espelho do pedido será enviado pelo WhatsApp!"
-     c) Quando o cliente fornecer TODAS as informações (identificação, produto, quantidade e data), responder "PEDIDO_COMPLETO"
-     d) Se faltar alguma informação, perguntar especificamente o que falta
+     c) IMPORTANTE: Quando o cliente fornecer TODAS as informações (identificação, produto, quantidade e data), você DEVE responder APENAS "PEDIDO_COMPLETO" (sem texto adicional)
+     d) Se faltar alguma informação, perguntar especificamente o que falta. Exemplo: "Faltou a data de entrega desejada! Por favor, me informe a data para que eu possa completar seu pedido."
    
    - Se resposta contiver "assistente", "falar com", "atendente": Responder "TRANSFERIR_ATENDENTE"
 
@@ -226,14 +226,15 @@ Diretrizes:
               }
             }
             
-            // Detectar datas em formato livre (ex: "dia 20/02 às 08:00", "15/02", "amanhã")
+            // Detectar datas em formato livre (ex: "dia 20/02 às 08:00", "15/02", "13/02", "amanhã")
             if (!dataEntrega) {
               const lowerMsg = message.toLowerCase();
-              // Padrão: "dia XX/XX" ou "XX/XX" ou "dia XX"
+              // Padrão: "dia XX/XX" ou "XX/XX" ou "dia XX" ou dias da semana
               const datePattern = /(?:dia\s*)?(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)|(?:dia\s*)(\d{1,2})|amanhã|depois de amanhã|segunda|terça|quarta|quinta|sexta|sábado|domingo/i;
               const dateMatch = message.match(datePattern);
               if (dateMatch) {
-                dataEntrega = message.trim();
+                // Extrair apenas a parte da data, não a mensagem inteira
+                dataEntrega = dateMatch[0].trim();
               }
             }
           
