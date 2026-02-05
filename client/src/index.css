@@ -43,39 +43,40 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
+  /* WhatsApp-inspired elegant green palette */
+  --primary: oklch(0.45 0.15 160); /* WhatsApp green */
+  --primary-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.42 0.14 160);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --chart-1: oklch(0.65 0.12 160);
+  --chart-2: oklch(0.55 0.14 160);
+  --chart-3: oklch(0.45 0.15 160);
+  --chart-4: oklch(0.35 0.13 160);
+  --chart-5: oklch(0.25 0.11 160);
+  --radius: 0.75rem;
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.20 0 0);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
+  --card-foreground: oklch(0.20 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
+  --popover-foreground: oklch(0.20 0 0);
+  --secondary: oklch(0.96 0.01 160);
+  --secondary-foreground: oklch(0.20 0 0);
+  --muted: oklch(0.96 0.005 160);
+  --muted-foreground: oklch(0.50 0 0);
+  --accent: oklch(0.96 0.01 160);
+  --accent-foreground: oklch(0.20 0 0);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.90 0.005 160);
+  --input: oklch(0.90 0.005 160);
+  --ring: oklch(0.45 0.15 160);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.20 0 0);
+  --sidebar-accent: oklch(0.96 0.01 160);
+  --sidebar-accent-foreground: oklch(0.20 0 0);
+  --sidebar-border: oklch(0.90 0.005 160);
+  --sidebar-ring: oklch(0.45 0.15 160);
 }
 
 .dark {
@@ -172,6 +173,82 @@
       padding-left: 2rem; /* 32px - desktop padding */
       padding-right: 2rem;
       max-width: 1280px; /* Standard content width */
+    }
+  }
+}
+@layer components {
+  /* WhatsApp-style chat bubbles */
+  .chat-bubble-sent {
+    @apply bg-primary text-primary-foreground rounded-lg rounded-br-sm px-4 py-2.5 max-w-[75%] ml-auto shadow-sm;
+  }
+
+  .chat-bubble-received {
+    @apply bg-card text-card-foreground rounded-lg rounded-bl-sm px-4 py-2.5 max-w-[75%] mr-auto shadow-sm border;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+  }
+
+  .typing-indicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.4;
+    animation: typing 1.4s infinite;
+  }
+
+  .typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    30% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+}
+
+@layer utilities {
+  /* Elegant animations */
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 }

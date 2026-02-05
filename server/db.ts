@@ -1,11 +1,16 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { 
+  InsertUser, users, 
+  conversations, InsertConversation, Conversation,
+  messages, InsertMessage, Message,
+  knowledgeBase, InsertKnowledgeBase, KnowledgeBase,
+  catalogs, InsertCatalog, Catalog
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -17,6 +22,8 @@ export async function getDb() {
   }
   return _db;
 }
+
+// ============ User Management ============
 
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
@@ -85,8 +92,143 @@ export async function getUserByOpenId(openId: string) {
   }
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ============ Conversations ============
+
+export async function createConversation(data: InsertConversation): Promise<Conversation> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(conversations).values(data);
+  const insertedId = Number(result[0].insertId);
+  
+  const created = await db.select().from(conversations).where(eq(conversations.id, insertedId)).limit(1);
+  return created[0]!;
+}
+
+export async function getConversationBySessionId(sessionId: string): Promise<Conversation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(conversations).where(eq(conversations.sessionId, sessionId)).limit(1);
+  return result[0];
+}
+
+export async function updateConversation(id: number, data: Partial<InsertConversation>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(conversations).set(data).where(eq(conversations.id, id));
+}
+
+export async function getAllConversations(): Promise<Conversation[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(conversations).orderBy(desc(conversations.createdAt));
+}
+
+export async function getConversationsByCategory(category: Conversation["category"]): Promise<Conversation[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(conversations)
+    .where(eq(conversations.category, category))
+    .orderBy(desc(conversations.createdAt));
+}
+
+// ============ Messages ============
+
+export async function createMessage(data: InsertMessage): Promise<Message> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(messages).values(data);
+  const insertedId = Number(result[0].insertId);
+  
+  const created = await db.select().from(messages).where(eq(messages.id, insertedId)).limit(1);
+  return created[0]!;
+}
+
+export async function getMessagesByConversationId(conversationId: number): Promise<Message[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(messages)
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(messages.createdAt);
+}
+
+// ============ Knowledge Base ============
+
+export async function getAllActiveKnowledge(): Promise<KnowledgeBase[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(knowledgeBase)
+    .where(eq(knowledgeBase.isActive, true))
+    .orderBy(knowledgeBase.category);
+}
+
+export async function createKnowledge(data: InsertKnowledgeBase): Promise<KnowledgeBase> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(knowledgeBase).values(data);
+  const insertedId = Number(result[0].insertId);
+  
+  const created = await db.select().from(knowledgeBase).where(eq(knowledgeBase.id, insertedId)).limit(1);
+  return created[0]!;
+}
+
+export async function updateKnowledge(id: number, data: Partial<InsertKnowledgeBase>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(knowledgeBase).set(data).where(eq(knowledgeBase.id, id));
+}
+
+export async function deleteKnowledge(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(knowledgeBase).where(eq(knowledgeBase.id, id));
+}
+
+// ============ Catalogs ============
+
+export async function getAllActiveCatalogs(): Promise<Catalog[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(catalogs)
+    .where(eq(catalogs.isActive, true))
+    .orderBy(catalogs.name);
+}
+
+export async function createCatalog(data: InsertCatalog): Promise<Catalog> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(catalogs).values(data);
+  const insertedId = Number(result[0].insertId);
+  
+  const created = await db.select().from(catalogs).where(eq(catalogs.id, insertedId)).limit(1);
+  return created[0]!;
+}
+
+export async function updateCatalog(id: number, data: Partial<InsertCatalog>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(catalogs).set(data).where(eq(catalogs.id, id));
+}
+
+export async function deleteCatalog(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(catalogs).where(eq(catalogs.id, id));
+}
