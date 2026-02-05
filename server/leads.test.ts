@@ -133,9 +133,9 @@ describe("Chat Flow - Qualification", () => {
     });
 
     expect(result.message).toBeDefined();
-    expect(result.message.sender).toBe("bot");
+    expect(typeof result.message).toBe("string");
     // Bot deve responder (LLM pode variar a resposta)
-    expect(result.message.content.length).toBeGreaterThan(0);
+    expect(result.message.length).toBeGreaterThan(0);
   });
 
   it("should handle prospect response and collect data", async () => {
@@ -157,8 +157,8 @@ describe("Chat Flow - Qualification", () => {
     });
 
     expect(result.message).toBeDefined();
-    expect(result.message.sender).toBe("bot");
+    expect(typeof result.message).toBe("string");
     // Bot deve responder (LLM pode variar a resposta)
-    expect(result.message.content.length).toBeGreaterThan(0);
+    expect(result.message.length).toBeGreaterThan(0);
   });
 });

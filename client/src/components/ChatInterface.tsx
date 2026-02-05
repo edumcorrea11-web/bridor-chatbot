@@ -65,7 +65,15 @@ export default function ChatInterface() {
       });
 
       setIsTyping(false);
-      setMessages((prev) => [...prev, response.message as Message]);
+      // Criar objeto Message a partir da string retornada
+      const botMessage: Message = {
+        id: Date.now(),
+        sender: "bot",
+        content: response.message,
+        messageType: "text",
+        createdAt: new Date(),
+      };
+      setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       setIsTyping(false);
       console.error("Erro ao enviar mensagem:", error);

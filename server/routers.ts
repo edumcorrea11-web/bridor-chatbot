@@ -226,6 +226,18 @@ Diretrizes:
               }
             }
             
+            // Detectar datas em formato livre (ex: "dia 20/02 às 08:00", "15/02", "amanhã")
+            if (!dataEntrega) {
+              const lowerMsg = message.toLowerCase();
+              // Padrão: "dia XX/XX" ou "XX/XX" ou "dia XX"
+              const datePattern = /(?:dia\s*)?(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)|(?:dia\s*)(\d{1,2})|amanhã|depois de amanhã|segunda|terça|quarta|quinta|sexta|sábado|domingo/i;
+              const dateMatch = message.match(datePattern);
+              if (dateMatch) {
+                dataEntrega = message.trim();
+              }
+            }
+          
+            
             // Detectar formato livre: mensagem com produtos listados (ex: "2 croissant, 3 pães")
             const lowerMsg = message.toLowerCase();
             if (!produtoLivre && message.length > 10 && message.length < 500 &&
@@ -251,9 +263,15 @@ Diretrizes:
             }
             
             // Se não tem CNPJ e a mensagem parece ser nome de estabelecimento
-            if (!cnpj && msg.length > 3 && msg.length < 100 && 
+            // Excluir mensagens que parecem ser datas ou produtos
+            const isDate = /\d{1,2}\/\d{1,2}|dia \d|\d{1,2}:\d{2}|janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(msg);
+            const hasNumbers = /\d/.test(msg);
+            const isProductList = msg.includes(",") && hasNumbers;
+            
+            if (!cnpj && !estabelecimento && msg.length > 3 && msg.length < 100 && 
                 !lowerMsg.includes("pedido") && !lowerMsg.includes("produto") && 
-                !lowerMsg.includes("quantidade") && !lowerMsg.includes("data")) {
+                !lowerMsg.includes("quantidade") && !lowerMsg.includes("data") &&
+                !isDate && !isProductList) {
               estabelecimento = msg.trim();
             }
           }
@@ -376,7 +394,7 @@ Diretrizes:
           messageType,
         });
 
-        return { message: botMessage, category: newCategory };
+        return { message: botResponse, category: newCategory };
       }),
 
     // Obter histórico de mensagens

@@ -66,8 +66,8 @@ describe("Chat Router", () => {
     });
 
     expect(result.message).toBeDefined();
-    expect(result.message.sender).toBe("bot");
-    expect(result.message.content).toBeDefined();
+    expect(typeof result.message).toBe("string");
+    expect(result.message.length).toBeGreaterThan(0);
   });
 });
 

@@ -152,3 +152,38 @@
 - [x] Remover detecção programática de números
 - [x] Atualizar todos os prompts do LLM para não mencionar números
 - [x] Tornar conversa mais natural e humana
+
+
+## Revisão Completa e Testes Sistemáticos
+
+### Fluxo 1: Cliente Existente → Pedido
+- [ ] Testar resposta "sim" na primeira pergunta
+- [ ] Testar resposta "pedido" no menu
+- [ ] Testar coleta de estabelecimento/CNPJ
+- [ ] Testar coleta de produtos em formato livre
+- [ ] Testar coleta de data de entrega
+- [ ] Validar resumo completo com todos os dados
+- [ ] Verificar mensagem de transferência para Maria Luiza
+
+### Fluxo 2: Cliente Existente → Assistente
+- [ ] Testar resposta "sim" na primeira pergunta
+- [ ] Testar resposta "assistente" no menu
+- [ ] Verificar mensagem de transferência imediata
+- [ ] Validar contexto passado para Maria Luiza
+
+### Fluxo 3: Prospect (Não-Cliente)
+- [ ] Testar resposta "não" na primeira pergunta
+- [ ] Testar coleta de nome do prospect
+- [ ] Testar coleta de cidade
+- [ ] Testar coleta de estado
+- [ ] Testar coleta de tipo de estabelecimento
+- [ ] Validar salvamento de dados no banco
+- [ ] Verificar categorização correta no dashboard
+
+### Bugs a Identificar e Corrigir
+- [ ] Bot não entende variações de respostas
+- [ ] Resumo incompleto ou incorreto
+- [ ] Fluxos que travam ou não avançam
+- [ ] Mensagens confusas ou repetitivas
+- [ ] Problemas de formatação
+- [ ] Erros de salvamento no banco de dados
