@@ -95,3 +95,10 @@
 - [x] Testar fluxo completo de pedido de cliente existente
 - [x] Validar que todos os dados são coletados corretamente
 - [x] Verificar formatação do resumo para Maria Luiza
+
+## Bugs Reportados - Correção Urgente #2
+
+- [x] Corrigir reconhecimento da resposta "1" quando cliente confirma que já é cliente (precisa repetir)
+- [x] Melhorar extração de dados do pedido do histórico de mensagens
+- [x] Corrigir formatação do resumo do pedido para exibição clara
+- [x] Testar fluxo completo de cliente existente → pedido

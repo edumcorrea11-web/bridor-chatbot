@@ -197,15 +197,41 @@ Diretrizes:
           botResponse = botResponse.replace("PEDIDO_COMPLETO", "").trim();
           
           // Extrair informações do pedido do histórico recente
-          const recentMessages = history.slice(-5);
+          const recentMessages = history.slice(-10);
           let orderInfo = "";
+          let produto = "";
+          let quantidade = "";
+          let dataEntrega = "";
           
-          // Tentar encontrar as informações nas últimas mensagens do cliente
-          for (const msg of recentMessages.reverse()) {
-            if (msg.sender === "customer") {
-              orderInfo = msg.content;
-              break;
+          // Coletar todas as mensagens do cliente para análise
+          const customerMessages = recentMessages
+            .filter(msg => msg.sender === "customer")
+            .map(msg => msg.content)
+            .join(" ");
+          
+          // Tentar extrair informações estruturadas
+          const lines = customerMessages.split(/\n/);
+          for (const line of lines) {
+            const lowerLine = line.toLowerCase();
+            if (lowerLine.includes("produto:") || lowerLine.includes("📦")) {
+              produto = line.replace(/produto:/gi, "").replace("📦", "").trim();
+            } else if (lowerLine.includes("quantidade:") || lowerLine.includes("🔢")) {
+              quantidade = line.replace(/quantidade:/gi, "").replace("🔢", "").trim();
+            } else if (lowerLine.includes("data") || lowerLine.includes("entrega") || lowerLine.includes("📅")) {
+              dataEntrega = line.replace(/data.*?:/gi, "").replace("📅", "").trim();
             }
+          }
+          
+          // Se não conseguiu extrair estruturado, usar a última mensagem
+          if (!produto && !quantidade && !dataEntrega) {
+            for (const msg of recentMessages.reverse()) {
+              if (msg.sender === "customer" && msg.content.length > 10) {
+                orderInfo = msg.content;
+                break;
+              }
+            }
+          } else {
+            orderInfo = `📦 Produto: ${produto || "Não informado"}\n🔢 Quantidade: ${quantidade || "Não informada"}\n📅 Data de Entrega: ${dataEntrega || "Não informada"}`;
           }
           
           // Criar resumo formatado do pedido
@@ -244,10 +270,16 @@ Diretrizes:
         const lowerBotResponse = botResponse.toLowerCase();
         
         // Se o usuário responde que é cliente existente
-        if (conversation.isExistingCustomer === null && 
-            (lowerContent.includes("sim") || lowerContent.includes("já sou") || lowerContent.includes("ja sou") || lowerContent === "1")) {
-          // Verificar se o bot está oferecendo menu de cliente
-          if (lowerBotResponse.includes("pedido") || lowerBotResponse.includes("assistente")) {
+        if (conversation.isExistingCustomer === null) {
+          const isPositiveResponse = lowerContent.includes("sim") || 
+                                     lowerContent.includes("já sou") || 
+                                     lowerContent.includes("ja sou") || 
+                                     lowerContent.includes("sou sim") ||
+                                     lowerContent.trim() === "1" ||
+                                     lowerContent.includes("já compro") ||
+                                     lowerContent.includes("ja compro");
+          
+          if (isPositiveResponse) {
             await updateConversation(conversation.id, {
               isExistingCustomer: true,
             });
@@ -255,10 +287,16 @@ Diretrizes:
         }
         
         // Se o usuário responde que NÃO é cliente (prospect)
-        if (conversation.isExistingCustomer === null && 
-            (lowerContent.includes("não") || lowerContent.includes("nao") || lowerContent.includes("ainda não") || lowerContent === "2")) {
-          // Verificar se o bot está coletando dados
-          if (lowerBotResponse.includes("nome") || lowerBotResponse.includes("cidade") || lowerBotResponse.includes("estado") || lowerBotResponse.includes("estabelecimento")) {
+        if (conversation.isExistingCustomer === null) {
+          const isNegativeResponse = lowerContent.includes("não") || 
+                                     lowerContent.includes("nao") || 
+                                     lowerContent.includes("ainda não") ||
+                                     lowerContent.includes("ainda nao") ||
+                                     lowerContent.trim() === "2" ||
+                                     lowerContent.includes("não sou") ||
+                                     lowerContent.includes("nao sou");
+          
+          if (isNegativeResponse) {
             await updateConversation(conversation.id, {
               isExistingCustomer: false,
             });
