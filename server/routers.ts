@@ -102,8 +102,12 @@ export const appRouter = router({
 FLUXO DE QUALIFICAÇÃO:
 
 1. PRIMEIRA PERGUNTA: "Você já é cliente da Bridor?"
-   - Se SIM (resposta 1): Cliente Existente → Oferecer menu: "1. Fazer Pedido" ou "2. Falar com Assistente de Vendas"
-   - Se NÃO (resposta 2): Prospect → Coletar dados: Nome, Cidade, Estado, Tipo de Estabelecimento
+   - Se SIM (resposta contendo "sim", "já sou", "1" ou similar): Cliente Existente → IMEDIATAMENTE oferecer menu:
+     "Que ótimo! Como posso te ajudar hoje?
+     1️⃣ Fazer um pedido
+     2️⃣ Falar com assistente de vendas
+     Digite 1 ou 2 para continuar!"
+   - Se NÃO (resposta contendo "não", "ainda não", "2" ou similar): Prospect → Coletar dados: Nome, Cidade, Estado, Tipo de Estabelecimento
 
 2. PARA CLIENTES EXISTENTES:
    - Opção 1 (Fazer Pedido): Coletar informações do pedido e responder "TRANSFERIR_ATENDENTE"
@@ -189,16 +193,43 @@ Diretrizes:
             transferredToAgent: true,
             category: newCategory,
           });
-        } else if (conversation.category === "unknown") {
+        }
+        
+        // Detectar se é cliente existente ou prospect na primeira resposta
+        const lowerContent = input.content.toLowerCase();
+        const lowerBotResponse = botResponse.toLowerCase();
+        
+        // Se o usuário responde que é cliente existente
+        if (conversation.isExistingCustomer === null && 
+            (lowerContent.includes("sim") || lowerContent.includes("já sou") || lowerContent.includes("ja sou") || lowerContent === "1")) {
+          // Verificar se o bot está oferecendo menu de cliente
+          if (lowerBotResponse.includes("pedido") || lowerBotResponse.includes("assistente")) {
+            await updateConversation(conversation.id, {
+              isExistingCustomer: true,
+            });
+          }
+        }
+        
+        // Se o usuário responde que NÃO é cliente (prospect)
+        if (conversation.isExistingCustomer === null && 
+            (lowerContent.includes("não") || lowerContent.includes("nao") || lowerContent.includes("ainda não") || lowerContent === "2")) {
+          // Verificar se o bot está coletando dados
+          if (lowerBotResponse.includes("nome") || lowerBotResponse.includes("cidade") || lowerBotResponse.includes("estado") || lowerBotResponse.includes("estabelecimento")) {
+            await updateConversation(conversation.id, {
+              isExistingCustomer: false,
+            });
+          }
+        }
+        
+        if (conversation.category === "unknown") {
           // Tentar identificar categoria baseado no conteúdo
-          const lowerContent = input.content.toLowerCase();
-          if (lowerContent.includes("catálogo") || lowerContent.includes("catalogo") || lowerContent.includes("2")) {
+          if (lowerContent.includes("catálogo") || lowerContent.includes("catalogo")) {
             newCategory = "catalog";
             shouldUpdateCategory = true;
-          } else if (lowerContent.includes("pedido") || lowerContent.includes("comprar") || lowerContent.includes("3")) {
+          } else if (lowerContent.includes("pedido") || lowerContent.includes("comprar")) {
             newCategory = "order";
             shouldUpdateCategory = true;
-          } else if (lowerContent.includes("informação") || lowerContent.includes("informacao") || lowerContent.includes("1")) {
+          } else if (lowerContent.includes("informação") || lowerContent.includes("informacao")) {
             newCategory = "information";
             shouldUpdateCategory = true;
           }

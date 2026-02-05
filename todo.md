@@ -73,3 +73,10 @@
 - [x] Testar fluxo completo para prospect
 - [x] Validar captura de todos os dados de qualificação
 - [x] Testar dashboard de leads
+
+## Bug Reportado - Correção Urgente
+
+- [x] Investigar por que opção 1 (cliente existente) não funciona
+- [x] Corrigir lógica do fluxo de cliente existente
+- [x] Testar correção completa do fluxo
+- [x] Validar que opção 2 (prospect) continua funcionando
