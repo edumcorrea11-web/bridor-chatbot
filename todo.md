@@ -117,3 +117,10 @@
 - [x] Implementar coleta de nome do estabelecimento ou CNPJ logo após escolher "Fazer Pedido"
 - [x] Incluir identificação no resumo para Maria Luiza
 - [x] Atualizar prompt do LLM com nova etapa de identificação
+
+## Bug Crítico - Reconhecimento de "1"
+
+- [x] Bot não reconhece "1" sozinho como resposta válida no menu
+- [x] Usuário precisa digitar "Pedido" por extenso para funcionar
+- [x] LLM está interpretando "1" como mal-entendido ao invés de escolha válida
+- [x] Ajustar prompt para ser mais permissivo com respostas numéricas curtas no contexto de menu
