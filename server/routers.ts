@@ -56,7 +56,7 @@ export const appRouter = router({
         const welcomeMessage = await createMessage({
           conversationId: conversation.id,
           sender: "bot",
-          content: "Olá! Bem-vindo à Bridor! 👋\n\nSou seu assistente virtual e estou aqui para ajudar.\n\nPara começar, me conta: você já é cliente da Bridor?\n\n1️⃣ Sim, já compro da Bridor\n2️⃣ Não, ainda não sou cliente\n\nDigite 1 ou 2 para continuar!",
+          content: "Olá! Bem-vindo à Bridor! 👋\n\nSou seu assistente virtual e estou aqui para ajudar.\n\nPara começar, me conta: você já é cliente da Bridor?\n\nResponda \"sim\" ou \"não\" para continuar!",
           messageType: "menu",
         });
 
@@ -99,20 +99,7 @@ export const appRouter = router({
         // Preparar contexto para o LLM
         const systemPrompt = `Você é um assistente virtual da Bridor, empresa especializada em panificação, confeitaria e food service.
 
-FLUXO DE QUALIFICAÇÃO:
-
-1. PRIMEIRA PERGUNTA: "Você já é cliente da Bridor?"
-   - Se SIM (resposta contendo "sim", "já sou", "1" ou similar): Cliente Existente → IMEDIATAMENTE oferecer menu:
-     "Que ótimo! Como posso te ajudar hoje?
-     1️⃣ Fazer um pedido
-     2️⃣ Falar com assistente de vendas
-     Digite 1 ou 2 para continuar!"
-   - Se NÃO (resposta contendo "não", "ainda não", "2" ou similar): Prospect → Coletar dados: Nome, Cidade, Estado, Tipo de Estabelecimento
-
-2. PARA CLIENTES EXISTENTES:
-   IMPORTANTE: Quando o cliente responder APENAS "1" ou APENAS "2" após ver o menu, isso É UMA RESPOSTA VÁLIDA. Não peça para digitar novamente.
-   
-   - Se resposta for "1" (ou "pedido", "fazer pedido"): Iniciar fluxo de pedido:
+FLUXO DE QUALIFICAÇÃO:1. PRIMEIRA PERGUNTA: "Você já é cliente da Bridor?"\n   - Se SIM (resposta contendo "sim", "já sou", "sou cliente" ou similar): Cliente Existente → IMEDIATAMENTE oferecer menu:\n     "Que ótimo! Como posso te ajudar hoje?\n     📦 Digite \"pedido\" para fazer um pedido\n     👩‍💼 Digite \"assistente\" para falar com nossa equipe de vendas"\n   - Se NÃO (resposta contendo "não", "ainda não", "não sou" ou similar): Prospect → Coletar dados: Nome, Cidade, Estado, Tipo de Estabeleci2. PARA CLIENTES EXISTENTES:\n   IMPORTANTE: Aceite respostas naturais como "pedido", "fazer pedido", "quero fazer pedido" ou "assistente", "falar com assistente".\n   \n   - Se resposta contiver "pedido" ou "fazer pedido": Iniciar fluxo de pedido:
      a) PRIMEIRO, perguntar: "Para localizar seu cadastro, por favor me informe o nome do seu estabelecimento ou CNPJ"
      b) Após receber a identificação, pedir o pedido no formato:
         "Perfeito! Agora envie seu pedido com as seguintes informações:
@@ -124,7 +111,7 @@ FLUXO DE QUALIFICAÇÃO:
      c) Quando o cliente fornecer TODAS as informações (identificação, produto, quantidade e data), responder "PEDIDO_COMPLETO"
      d) Se faltar alguma informação, perguntar especificamente o que falta
    
-   - Se resposta for "2" (ou "assistente", "falar com"): Responder "TRANSFERIR_ATENDENTE"
+   - Se resposta contiver "assistente", "falar com", "atendente": Responder "TRANSFERIR_ATENDENTE"
 
 3. PARA PROSPECTS (NÃO-CLIENTES):
    - Coletar Nome completo
@@ -328,29 +315,7 @@ Diretrizes:
         const lowerContent = input.content.toLowerCase();
         const lowerBotResponse = botResponse.toLowerCase();
         
-        // DETECÇÃO PROGRAMÁTICA: Se cliente existente já confirmado e responde "1" ou "2" no menu
-        if (conversation.isExistingCustomer === true && !conversation.transferredToAgent) {
-          const trimmedContent = input.content.trim();
-          
-          // Se responder apenas "1" -> Forçar fluxo de pedido
-          if (trimmedContent === "1" || lowerContent === "pedido" || lowerContent === "fazer pedido") {
-            botResponse = "Entendi! Para localizar seu cadastro, por favor me informe o nome do seu estabelecimento ou CNPJ.";
-            messageType = "text";
-          }
-          // Se responder apenas "2" -> Forçar transferência
-          else if (trimmedContent === "2" || lowerContent === "assistente" || lowerContent.includes("falar com")) {
-            botResponse = "Perfeito! Vou transferir você para Maria Luiza, nossa assistente de vendas, que vai te atender. Aguarde um momento... 👩‍💼";
-            messageType = "system";
-            newCategory = "order";
-            shouldUpdateCategory = true;
-            
-            await updateConversation(conversation.id, {
-              status: "transferred",
-              transferredToAgent: true,
-              category: newCategory,
-            });
-          }
-        }
+        // Detecção removida - agora apenas o LLM processa as respostas
         
         // Se o usuário responde que é cliente existente
         if (conversation.isExistingCustomer === null) {
@@ -358,7 +323,7 @@ Diretrizes:
                                      lowerContent.includes("já sou") || 
                                      lowerContent.includes("ja sou") || 
                                      lowerContent.includes("sou sim") ||
-                                     lowerContent.trim() === "1" ||
+                                     lowerContent.includes("sou cliente") ||
                                      lowerContent.includes("já compro") ||
                                      lowerContent.includes("ja compro");
           
@@ -375,7 +340,6 @@ Diretrizes:
                                      lowerContent.includes("nao") || 
                                      lowerContent.includes("ainda não") ||
                                      lowerContent.includes("ainda nao") ||
-                                     lowerContent.trim() === "2" ||
                                      lowerContent.includes("não sou") ||
                                      lowerContent.includes("nao sou");
           

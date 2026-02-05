@@ -110,8 +110,8 @@ describe("Chat Flow - Qualification", () => {
     });
 
     expect(result.welcomeMessage.content).toContain("já é cliente da Bridor");
-    expect(result.welcomeMessage.content).toContain("1️⃣");
-    expect(result.welcomeMessage.content).toContain("2️⃣");
+    expect(result.welcomeMessage.content).toContain("sim");
+    expect(result.welcomeMessage.content).toContain("não");
   });
 
   it("should handle existing customer response", async () => {

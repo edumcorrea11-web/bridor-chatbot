@@ -140,3 +140,15 @@
 - [x] Parser não está extraindo os produtos da mensagem do cliente
 - [x] Resumo incompleto impede Maria Luiza de processar o pedido
 - [x] Implementado parser de formato livre que detecta listas de produtos
+
+
+## Mudança de Design - Sistema Baseado em Palavras
+
+### Decisão do Usuário
+- [x] Remover TODAS as opções numéricas (1, 2) do sistema
+- [x] Implementar sistema baseado apenas em palavras naturais
+- [x] Primeira pergunta: aceitar "sim" ou "não" (ao invés de 1/2)
+- [x] Menu de cliente: aceitar "pedido" ou "assistente" (ao invés de 1/2)
+- [x] Remover detecção programática de números
+- [x] Atualizar todos os prompts do LLM para não mencionar números
+- [x] Tornar conversa mais natural e humana
