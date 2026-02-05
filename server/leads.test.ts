@@ -36,7 +36,7 @@ describe("Leads Router", () => {
     const ctx = createTestContext();
     const caller = appRouter.createCaller(ctx);
 
-    const sessionId = "test-session-" + Date.now();
+    const sessionId = "test-session-" + Date.now() + "-" + Math.random().toString(36).substring(7);
     
     // Criar conversa
     await caller.chat.startConversation({
@@ -102,7 +102,7 @@ describe("Chat Flow - Qualification", () => {
     const ctx = createTestContext();
     const caller = appRouter.createCaller(ctx);
 
-    const sessionId = "test-session-" + Date.now();
+    const sessionId = "test-session-" + Date.now() + "-" + Math.random().toString(36).substring(7);
     
     const result = await caller.chat.startConversation({
       sessionId,
@@ -118,7 +118,7 @@ describe("Chat Flow - Qualification", () => {
     const ctx = createTestContext();
     const caller = appRouter.createCaller(ctx);
 
-    const sessionId = "test-session-" + Date.now();
+    const sessionId = "test-session-" + Date.now() + "-" + Math.random().toString(36).substring(7);
     
     // Iniciar conversa
     await caller.chat.startConversation({
@@ -142,7 +142,7 @@ describe("Chat Flow - Qualification", () => {
     const ctx = createTestContext();
     const caller = appRouter.createCaller(ctx);
 
-    const sessionId = "test-session-" + Date.now();
+    const sessionId = "test-session-" + Date.now() + "-" + Math.random().toString(36).substring(7);
     
     // Iniciar conversa
     await caller.chat.startConversation({

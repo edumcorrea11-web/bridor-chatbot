@@ -43,6 +43,10 @@ export const conversations = mysqlTable("conversations", {
     "distribuidor",
     "representante"
   ]),
+  // Campos de pedido
+  orderProduct: text("orderProduct"),
+  orderQuantity: varchar("orderQuantity", { length: 255 }),
+  orderDeliveryDate: varchar("orderDeliveryDate", { length: 100 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

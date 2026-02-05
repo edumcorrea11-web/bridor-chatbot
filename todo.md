@@ -80,3 +80,18 @@
 - [x] Corrigir lógica do fluxo de cliente existente
 - [x] Testar correção completa do fluxo
 - [x] Validar que opção 2 (prospect) continua funcionando
+
+## Enriquecimento do Fluxo de Pedidos
+
+### Backend - Banco de Dados
+- [x] Adicionar campos para armazenar dados do pedido: `orderProduct`, `orderQuantity`, `orderDeliveryDate`
+
+### Backend - Lógica de Negócio
+- [x] Implementar coleta estruturada de produto, quantidade e data de entrega
+- [x] Criar formatação de resumo do pedido para transferência
+- [x] Atualizar prompt do LLM com instruções de coleta de pedido
+
+### Testes
+- [x] Testar fluxo completo de pedido de cliente existente
+- [x] Validar que todos os dados são coletados corretamente
+- [x] Verificar formatação do resumo para Maria Luiza

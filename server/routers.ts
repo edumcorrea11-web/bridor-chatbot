@@ -110,7 +110,16 @@ FLUXO DE QUALIFICAÇÃO:
    - Se NÃO (resposta contendo "não", "ainda não", "2" ou similar): Prospect → Coletar dados: Nome, Cidade, Estado, Tipo de Estabelecimento
 
 2. PARA CLIENTES EXISTENTES:
-   - Opção 1 (Fazer Pedido): Coletar informações do pedido e responder "TRANSFERIR_ATENDENTE"
+   - Opção 1 (Fazer Pedido): Coletar informações do pedido seguindo este fluxo:
+     a) Pedir para o cliente enviar o pedido no formato:
+        "Por favor, envie seu pedido com as seguintes informações:
+        📦 Produto:
+        🔢 Quantidade:
+        📅 Data de entrega desejada:
+        
+        Assim que receber, o espelho do pedido será enviado pelo WhatsApp!"
+     b) Quando o cliente fornecer TODAS as informações (produto, quantidade e data), responder "PEDIDO_COMPLETO"
+     c) Se faltar alguma informação, perguntar especificamente o que falta
    - Opção 2 (Falar com Assistente): Responder "TRANSFERIR_ATENDENTE"
 
 3. PARA PROSPECTS (NÃO-CLIENTES):
@@ -122,7 +131,8 @@ FLUXO DE QUALIFICAÇÃO:
 
 4. COMANDOS ESPECIAIS:
    - Quando cliente/prospect solicitar catálogo: "ENVIAR_CATALOGO"
-   - Quando identificar pedido ou solicitação de contato: "TRANSFERIR_ATENDENTE"
+   - Quando cliente fornecer TODAS as informações do pedido (produto, quantidade, data): "PEDIDO_COMPLETO"
+   - Quando identificar solicitação de contato direto com assistente: "TRANSFERIR_ATENDENTE"
    - Quando completar qualificação de prospect: "QUALIFICACAO_COMPLETA"
 
 Base de Conhecimento:
@@ -182,6 +192,40 @@ Diretrizes:
           } else {
             botResponse = "No momento não temos catálogos disponíveis. Posso transferir você para um atendente que pode te enviar as informações. Gostaria?";
           }
+        } else if (botResponse.includes("PEDIDO_COMPLETO")) {
+          // Cliente forneceu todas as informações do pedido
+          botResponse = botResponse.replace("PEDIDO_COMPLETO", "").trim();
+          
+          // Extrair informações do pedido do histórico recente
+          const recentMessages = history.slice(-5);
+          let orderInfo = "";
+          
+          // Tentar encontrar as informações nas últimas mensagens do cliente
+          for (const msg of recentMessages.reverse()) {
+            if (msg.sender === "customer") {
+              orderInfo = msg.content;
+              break;
+            }
+          }
+          
+          // Criar resumo formatado do pedido
+          const orderSummary = `✅ Pedido recebido com sucesso!\n\n📝 RESUMO DO PEDIDO:\n${orderInfo}\n\nVou transferir você para Maria Luiza que vai confirmar seu pedido e enviar o espelho pelo WhatsApp. Aguarde um momento... 👩‍💼`;
+          
+          if (!botResponse) {
+            botResponse = orderSummary;
+          }
+          
+          messageType = "system";
+          newCategory = "order";
+          shouldUpdateCategory = true;
+          
+          // Salvar informações do pedido
+          await updateConversation(conversation.id, {
+            status: "transferred",
+            transferredToAgent: true,
+            category: newCategory,
+            orderProduct: orderInfo, // Salvar o texto completo por enquanto
+          });
         } else if (botResponse.includes("TRANSFERIR_ATENDENTE")) {
           botResponse = "Perfeito! Vou transferir você para Maria Luiza, nossa assistente de vendas, que vai te atender. Aguarde um momento... 👩‍💼";
           messageType = "system";
