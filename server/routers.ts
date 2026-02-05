@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
+import { leadsRouter } from "./routers-leads";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
@@ -51,11 +52,11 @@ export const appRouter = router({
           status: "active",
         });
 
-        // Criar mensagem de boas-vindas
+        // Criar mensagem de boas-vindas com qualificação inicial
         const welcomeMessage = await createMessage({
           conversationId: conversation.id,
           sender: "bot",
-          content: "Olá! Bem-vindo à Bridor! 👋\n\nSou seu assistente virtual e estou aqui para ajudar. Como posso te atender hoje?\n\n1️⃣ Informações sobre produtos\n2️⃣ Solicitar catálogo\n3️⃣ Fazer um pedido\n\nDigite o número da opção ou descreva o que você precisa!",
+          content: "Olá! Bem-vindo à Bridor! 👋\n\nSou seu assistente virtual e estou aqui para ajudar.\n\nPara começar, me conta: você já é cliente da Bridor?\n\n1️⃣ Sim, já compro da Bridor\n2️⃣ Não, ainda não sou cliente\n\nDigite 1 ou 2 para continuar!",
           messageType: "menu",
         });
 
@@ -98,12 +99,27 @@ export const appRouter = router({
         // Preparar contexto para o LLM
         const systemPrompt = `Você é um assistente virtual da Bridor, empresa especializada em panificação, confeitaria e food service.
 
-Sua função é:
-1. Recepcionar clientes de forma cordial e profissional
-2. Identificar a intenção do cliente (informações, catálogo ou pedido)
-3. Responder perguntas usando a base de conhecimento
-4. Quando o cliente solicitar catálogo, responda: "ENVIAR_CATALOGO"
-5. Quando identificar que é um pedido, colete informações básicas (nome, telefone, produto desejado) e responda: "TRANSFERIR_ATENDENTE"
+FLUXO DE QUALIFICAÇÃO:
+
+1. PRIMEIRA PERGUNTA: "Você já é cliente da Bridor?"
+   - Se SIM (resposta 1): Cliente Existente → Oferecer menu: "1. Fazer Pedido" ou "2. Falar com Assistente de Vendas"
+   - Se NÃO (resposta 2): Prospect → Coletar dados: Nome, Cidade, Estado, Tipo de Estabelecimento
+
+2. PARA CLIENTES EXISTENTES:
+   - Opção 1 (Fazer Pedido): Coletar informações do pedido e responder "TRANSFERIR_ATENDENTE"
+   - Opção 2 (Falar com Assistente): Responder "TRANSFERIR_ATENDENTE"
+
+3. PARA PROSPECTS (NÃO-CLIENTES):
+   - Coletar Nome completo
+   - Coletar Cidade
+   - Coletar Estado (sigla com 2 letras)
+   - Coletar Tipo de Estabelecimento: Supermercado, Cafeteria, Padaria/Confeitaria, Buffet, Catering, Distribuidor ou Representante
+   - Após coletar todos os dados, responder: "QUALIFICACAO_COMPLETA" e oferecer enviar catálogo
+
+4. COMANDOS ESPECIAIS:
+   - Quando cliente/prospect solicitar catálogo: "ENVIAR_CATALOGO"
+   - Quando identificar pedido ou solicitação de contato: "TRANSFERIR_ATENDENTE"
+   - Quando completar qualificação de prospect: "QUALIFICACAO_COMPLETA"
 
 Base de Conhecimento:
 ${knowledgeContext || "Ainda não há informações cadastradas na base de conhecimento."}
@@ -111,8 +127,9 @@ ${knowledgeContext || "Ainda não há informações cadastradas na base de conhe
 Diretrizes:
 - Seja cordial, profissional e objetivo
 - Use emojis moderadamente para humanizar
-- Faça perguntas para qualificar a necessidade do cliente
-- Se não souber algo, seja honesto e ofereça transferir para um atendente humano`;
+- Faça UMA pergunta por vez para não sobrecarregar o cliente
+- Sempre confirme os dados coletados antes de prosseguir
+- Se não souber algo, seja honesto e ofereça transferir para um atendente humano`;;
 
         const conversationHistory: LLMMessage[] = history.slice(-10).map(msg => ({
           role: msg.sender === "bot" ? "assistant" as const : "user" as const,
@@ -137,7 +154,19 @@ Diretrizes:
         let newCategory: "information" | "catalog" | "order" | "unknown" = conversation.category;
 
         // Processar comandos especiais
-        if (botResponse.includes("ENVIAR_CATALOGO")) {
+        if (botResponse.includes("QUALIFICACAO_COMPLETA")) {
+          // Prospect completou qualificação - extrair dados da conversa
+          botResponse = botResponse.replace("QUALIFICACAO_COMPLETA", "").trim();
+          if (!botResponse) {
+            botResponse = "✅ Obrigado pelas informações! Seu cadastro foi realizado com sucesso.\n\nGostaria de receber nosso catálogo completo de produtos? Digite 'sim' para receber!";
+          }
+          
+          // Marcar como prospect qualificado
+          await updateConversation(conversation.id, {
+            isExistingCustomer: false,
+            category: "information",
+          });
+        } else if (botResponse.includes("ENVIAR_CATALOGO")) {
           const catalogs = await getAllActiveCatalogs();
           if (catalogs.length > 0) {
             botResponse = `📋 Aqui está nosso catálogo de produtos:\n\n${catalogs.map((c, i) => 
@@ -150,7 +179,7 @@ Diretrizes:
             botResponse = "No momento não temos catálogos disponíveis. Posso transferir você para um atendente que pode te enviar as informações. Gostaria?";
           }
         } else if (botResponse.includes("TRANSFERIR_ATENDENTE")) {
-          botResponse = "Perfeito! Vou transferir você para um de nossos atendentes que vai finalizar seu pedido. Aguarde um momento... 👨‍💼";
+          botResponse = "Perfeito! Vou transferir você para Maria Luiza, nossa assistente de vendas, que vai te atender. Aguarde um momento... 👩‍💼";
           messageType = "system";
           newCategory = "order";
           shouldUpdateCategory = true;
@@ -273,6 +302,8 @@ Diretrizes:
         return { success: true };
       }),
   }),
+
+  leads: leadsRouter,
 
   catalogs: router({
     // Listar todos os catálogos

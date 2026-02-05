@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Conversations from "./pages/Conversations";
 import Knowledge from "./pages/Knowledge";
 import Catalogs from "./pages/Catalogs";
+import Leads from "./pages/Leads";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <Route path={"/conversations"} component={Conversations} />
       <Route path={"/knowledge"} component={Knowledge} />
       <Route path={"/catalogs"} component={Catalogs} />
+      <Route path={"/leads"} component={Leads} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

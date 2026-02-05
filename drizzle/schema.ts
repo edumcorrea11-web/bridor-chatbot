@@ -29,6 +29,20 @@ export const conversations = mysqlTable("conversations", {
   category: mysqlEnum("category", ["information", "catalog", "order", "unknown"]).default("unknown").notNull(),
   status: mysqlEnum("status", ["active", "completed", "transferred"]).default("active").notNull(),
   transferredToAgent: boolean("transferredToAgent").default(false).notNull(),
+  // Campos de qualificação
+  isExistingCustomer: boolean("isExistingCustomer"),
+  leadName: varchar("leadName", { length: 255 }),
+  leadCity: varchar("leadCity", { length: 100 }),
+  leadState: varchar("leadState", { length: 2 }),
+  establishmentType: mysqlEnum("establishmentType", [
+    "supermercado",
+    "cafeteria",
+    "padaria_confeitaria",
+    "buffet",
+    "catering",
+    "distribuidor",
+    "representante"
+  ]),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

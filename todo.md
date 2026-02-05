@@ -36,6 +36,40 @@
 - [x] Validar persistência de dados no banco
 
 ## Documentação e Entrega
-- [ ] Criar checkpoint final
+- [x] Criar checkpoint final
 - [x] Documentar fluxos de uso do sistema
 - [x] Preparar instruções para configuração inicial
+
+## Refinamento do Fluxo de Qualificação
+
+### Backend - Banco de Dados
+- [x] Adicionar campo `isExistingCustomer` (boolean) na tabela conversations
+- [x] Adicionar campos de qualificação de prospect: `leadName`, `leadCity`, `leadState`, `establishmentType`
+- [x] Criar enum para tipos de estabelecimento (supermercado, cafeteria, padaria/confeitaria, buffet, catering, distribuidor, representante)
+- [x] Migrar banco de dados com novos campos
+
+### Backend - Lógica de Negócio
+- [x] Implementar fluxo de qualificação inicial (cliente existente vs prospect)
+- [x] Criar menu diferenciado para clientes existentes (Fazer Pedido / Falar com Assistente)
+- [x] Implementar formulário de captura de dados para prospects
+- [x] Adicionar validação de dados de qualificação
+- [x] Criar router para gestão de leads/prospects
+
+### Frontend - Interface de Chat
+- [x] Atualizar fluxo de conversa com pergunta inicial sobre cliente existente
+- [x] Implementar menu específico para clientes existentes
+- [x] Criar formulário interativo de qualificação para prospects
+- [x] Adicionar validação de campos no formulário de prospect
+
+### Frontend - Dashboard
+- [x] Criar página de Leads/Prospects no dashboard
+- [x] Implementar filtros por tipo de estabelecimento
+- [x] Adicionar estatísticas de conversão (prospects vs clientes)
+- [x] Criar visualização de dados geográficos (por estado/cidade)
+- [x] Adicionar exportação de leads para CSV
+
+### Testes
+- [x] Testar fluxo completo para cliente existente
+- [x] Testar fluxo completo para prospect
+- [x] Validar captura de todos os dados de qualificação
+- [x] Testar dashboard de leads
