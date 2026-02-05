@@ -102,3 +102,18 @@
 - [x] Melhorar extração de dados do pedido do histórico de mensagens
 - [x] Corrigir formatação do resumo do pedido para exibição clara
 - [x] Testar fluxo completo de cliente existente → pedido
+
+## Bugs Identificados na Conversa + Nova Funcionalidade
+
+### Bugs para Corrigir
+- [x] Bot não reconhece texto livre "Pedido" quando cliente digita ao invés de número "1"
+- [x] Resumo do pedido mostra formato incorreto ("Croissant g 2 cx" ao invés de estruturado)
+- [x] Data de entrega aparece duplicada ("13/02/2613/02/26")
+- [x] Melhorar parser de extração de dados do pedido
+
+### Nova Funcionalidade - Identificação do Estabelecimento
+- [x] Adicionar campo `customerEstablishment` no schema de conversations
+- [x] Adicionar campo `customerCNPJ` no schema de conversations
+- [x] Implementar coleta de nome do estabelecimento ou CNPJ logo após escolher "Fazer Pedido"
+- [x] Incluir identificação no resumo para Maria Luiza
+- [x] Atualizar prompt do LLM com nova etapa de identificação

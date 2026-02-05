@@ -111,15 +111,17 @@ FLUXO DE QUALIFICAÇÃO:
 
 2. PARA CLIENTES EXISTENTES:
    - Opção 1 (Fazer Pedido): Coletar informações do pedido seguindo este fluxo:
-     a) Pedir para o cliente enviar o pedido no formato:
-        "Por favor, envie seu pedido com as seguintes informações:
+     a) PRIMEIRO, perguntar: "Para localizar seu cadastro, por favor me informe o nome do seu estabelecimento ou CNPJ"
+     b) Após receber a identificação, pedir o pedido no formato:
+        "Perfeito! Agora envie seu pedido com as seguintes informações:
         📦 Produto:
         🔢 Quantidade:
         📅 Data de entrega desejada:
         
         Assim que receber, o espelho do pedido será enviado pelo WhatsApp!"
-     b) Quando o cliente fornecer TODAS as informações (produto, quantidade e data), responder "PEDIDO_COMPLETO"
-     c) Se faltar alguma informação, perguntar especificamente o que falta
+     c) Quando o cliente fornecer TODAS as informações (identificação, produto, quantidade e data), responder "PEDIDO_COMPLETO"
+     d) Se faltar alguma informação, perguntar especificamente o que falta
+     e) Aceitar tanto texto livre ("pedido", "fazer pedido") quanto número "1" para esta opção
    - Opção 2 (Falar com Assistente): Responder "TRANSFERIR_ATENDENTE"
 
 3. PARA PROSPECTS (NÃO-CLIENTES):
@@ -197,41 +199,77 @@ Diretrizes:
           botResponse = botResponse.replace("PEDIDO_COMPLETO", "").trim();
           
           // Extrair informações do pedido do histórico recente
-          const recentMessages = history.slice(-10);
+          const recentMessages = history.slice(-15);
           let orderInfo = "";
           let produto = "";
           let quantidade = "";
           let dataEntrega = "";
+          let estabelecimento = "";
+          let cnpj = "";
           
           // Coletar todas as mensagens do cliente para análise
           const customerMessages = recentMessages
             .filter(msg => msg.sender === "customer")
-            .map(msg => msg.content)
-            .join(" ");
+            .map(msg => msg.content);
           
           // Tentar extrair informações estruturadas
-          const lines = customerMessages.split(/\n/);
-          for (const line of lines) {
-            const lowerLine = line.toLowerCase();
-            if (lowerLine.includes("produto:") || lowerLine.includes("📦")) {
-              produto = line.replace(/produto:/gi, "").replace("📦", "").trim();
-            } else if (lowerLine.includes("quantidade:") || lowerLine.includes("🔢")) {
-              quantidade = line.replace(/quantidade:/gi, "").replace("🔢", "").trim();
-            } else if (lowerLine.includes("data") || lowerLine.includes("entrega") || lowerLine.includes("📅")) {
-              dataEntrega = line.replace(/data.*?:/gi, "").replace("📅", "").trim();
+          for (const message of customerMessages) {
+            const lines = message.split(/\n/);
+            for (const line of lines) {
+              const lowerLine = line.toLowerCase().trim();
+              
+              if (lowerLine.includes("produto:") || lowerLine.includes("📦")) {
+                produto = line.replace(/produto:/gi, "").replace("📦", "").trim();
+              } else if (lowerLine.includes("quantidade:") || lowerLine.includes("🔢")) {
+                quantidade = line.replace(/quantidade:/gi, "").replace("🔢", "").trim();
+              } else if (lowerLine.includes("data") && (lowerLine.includes("entrega") || lowerLine.includes("📅"))) {
+                // Extrair apenas a data, removendo labels e emojis
+                let tempData = line.replace(/data.*?:/gi, "").replace("📅", "").trim();
+                // Limpar duplicações (ex: "13/02/2613/02/26" -> "13/02/26")
+                const dateMatch = tempData.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+                if (dateMatch) {
+                  dataEntrega = dateMatch[1];
+                } else {
+                  dataEntrega = tempData;
+                }
+              }
             }
           }
           
-          // Se não conseguiu extrair estruturado, usar a última mensagem
-          if (!produto && !quantidade && !dataEntrega) {
-            for (const msg of recentMessages.reverse()) {
-              if (msg.sender === "customer" && msg.content.length > 10) {
-                orderInfo = msg.content;
+          // Extrair estabelecimento/CNPJ das primeiras mensagens após escolher pedido
+          for (let i = 0; i < Math.min(5, customerMessages.length); i++) {
+            const msg = customerMessages[i] || "";
+            const lowerMsg = msg.toLowerCase();
+            
+            // Detectar CNPJ (formato: XX.XXX.XXX/XXXX-XX ou apenas números)
+            const cnpjMatch = msg.match(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
+            if (cnpjMatch) {
+              cnpj = cnpjMatch[0];
+            } else if (/^\d{14}$/.test(msg.trim())) {
+              cnpj = msg.trim();
+            }
+            
+            // Se não tem CNPJ e a mensagem parece ser nome de estabelecimento
+            if (!cnpj && msg.length > 3 && msg.length < 100 && 
+                !lowerMsg.includes("pedido") && !lowerMsg.includes("produto") && 
+                !lowerMsg.includes("quantidade") && !lowerMsg.includes("data")) {
+              estabelecimento = msg.trim();
+            }
+          }
+          
+          // Montar resumo estruturado
+          const identificacao = cnpj ? `🏢 CNPJ: ${cnpj}` : (estabelecimento ? `🏢 Estabelecimento: ${estabelecimento}` : "");
+          
+          if (produto || quantidade || dataEntrega) {
+            orderInfo = `${identificacao ? identificacao + "\n" : ""}📦 Produto: ${produto || "Não informado"}\n🔢 Quantidade: ${quantidade || "Não informada"}\n📅 Data de Entrega: ${dataEntrega || "Não informada"}`;
+          } else {
+            // Fallback: usar última mensagem relevante
+            for (const msg of customerMessages.reverse()) {
+              if (msg.length > 10) {
+                orderInfo = `${identificacao ? identificacao + "\n" : ""}${msg}`;
                 break;
               }
             }
-          } else {
-            orderInfo = `📦 Produto: ${produto || "Não informado"}\n🔢 Quantidade: ${quantidade || "Não informada"}\n📅 Data de Entrega: ${dataEntrega || "Não informada"}`;
           }
           
           // Criar resumo formatado do pedido
@@ -250,7 +288,11 @@ Diretrizes:
             status: "transferred",
             transferredToAgent: true,
             category: newCategory,
-            orderProduct: orderInfo, // Salvar o texto completo por enquanto
+            customerEstablishment: estabelecimento || null,
+            customerCNPJ: cnpj || null,
+            orderProduct: produto || null,
+            orderQuantity: quantidade || null,
+            orderDeliveryDate: dataEntrega || null,
           });
         } else if (botResponse.includes("TRANSFERIR_ATENDENTE")) {
           botResponse = "Perfeito! Vou transferir você para Maria Luiza, nossa assistente de vendas, que vai te atender. Aguarde um momento... 👩‍💼";

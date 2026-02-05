@@ -44,6 +44,8 @@ export const conversations = mysqlTable("conversations", {
     "representante"
   ]),
   // Campos de pedido
+  customerEstablishment: varchar("customerEstablishment", { length: 255 }),
+  customerCNPJ: varchar("customerCNPJ", { length: 20 }),
   orderProduct: text("orderProduct"),
   orderQuantity: varchar("orderQuantity", { length: 255 }),
   orderDeliveryDate: varchar("orderDeliveryDate", { length: 100 }),
