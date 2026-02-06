@@ -49,8 +49,7 @@ describe("Leads Router", () => {
       sessionId,
       isExistingCustomer: false,
       leadName: "João Silva",
-      leadCity: "São Paulo",
-      leadState: "SP",
+      leadLocation: "São Paulo - SP",
       establishmentType: "padaria_confeitaria",
     });
 

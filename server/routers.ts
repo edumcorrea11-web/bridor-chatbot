@@ -115,8 +115,7 @@ FLUXO DE QUALIFICAÇÃO:1. PRIMEIRA PERGUNTA: "Você já é cliente da Bridor?"\
 
 3. PARA PROSPECTS (NÃO-CLIENTES):
    - Coletar Nome completo
-   - Coletar Cidade
-   - Coletar Estado (sigla com 2 letras)
+   - Coletar Cidade e Estado juntos no formato "Cidade - Estado" (exemplo: "Goiânia - Goiás" ou "São Paulo - SP")
    - Coletar Tipo de Estabelecimento: Supermercado, Cafeteria, Padaria/Confeitaria, Buffet, Catering, Distribuidor ou Representante
    - Após coletar todos os dados, responder: "QUALIFICACAO_COMPLETA" e oferecer enviar catálogo
 
@@ -166,10 +165,64 @@ Diretrizes:
             botResponse = "✅ Obrigado pelas informações! Seu cadastro foi realizado com sucesso.\n\nGostaria de receber nosso catálogo completo de produtos? Digite 'sim' para receber!";
           }
           
-          // Marcar como prospect qualificado
+          // Extrair dados do histórico de mensagens
+          const recentMessages = history.slice(-10);
+          const customerMessages = recentMessages
+            .filter(msg => msg.sender === "customer")
+            .map(msg => msg.content);
+          
+          let leadName = "";
+          let leadLocation = "";
+          let establishmentType = "";
+          
+          // Extrair nome (primeira mensagem após "não")
+          const nameIndex = customerMessages.findIndex(msg => msg.toLowerCase().includes("não"));
+          if (nameIndex >= 0 && nameIndex + 1 < customerMessages.length) {
+            const potentialName = customerMessages[nameIndex + 1].trim();
+            if (potentialName.length > 3 && potentialName.length < 100 && !potentialName.includes("-")) {
+              leadName = potentialName;
+            }
+          }
+          
+          // Extrair localização (mensagem com formato "Cidade - Estado")
+          for (const msg of customerMessages) {
+            if (msg.includes("-") && msg.length > 5 && msg.length < 100) {
+              leadLocation = msg.trim();
+              break;
+            }
+          }
+          
+          // Extrair tipo de estabelecimento (mapear resposta para enum)
+          const typeMap: Record<string, "supermercado" | "cafeteria" | "padaria_confeitaria" | "buffet" | "catering" | "distribuidor" | "representante"> = {
+            "supermercado": "supermercado",
+            "cafeteria": "cafeteria",
+            "café": "cafeteria",
+            "padaria": "padaria_confeitaria",
+            "confeitaria": "padaria_confeitaria",
+            "buffet": "buffet",
+            "catering": "catering",
+            "distribuidor": "distribuidor",
+            "representante": "representante",
+          };
+          
+          for (const msg of customerMessages) {
+            const lowerMsg = msg.toLowerCase();
+            for (const [key, value] of Object.entries(typeMap)) {
+              if (lowerMsg.includes(key)) {
+                establishmentType = value;
+                break;
+              }
+            }
+            if (establishmentType) break;
+          }
+          
+          // Marcar como prospect qualificado e salvar dados
           await updateConversation(conversation.id, {
             isExistingCustomer: false,
             category: "information",
+            leadName: leadName || null,
+            leadLocation: leadLocation || null,
+            establishmentType: (establishmentType as any) || null,
           });
         } else if (botResponse.includes("ENVIAR_CATALOGO")) {
           const catalogs = await getAllActiveCatalogs();

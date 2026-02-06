@@ -55,11 +55,10 @@ export default function Leads() {
   const exportToCSV = () => {
     if (!prospects || prospects.length === 0) return;
 
-    const headers = ["Nome", "Cidade", "Estado", "Tipo de Estabelecimento", "Data"];
+    const headers = ["Nome", "Localiza\u00e7\u00e3o", "Tipo de Estabelecimento", "Data"];
     const rows = prospects.map(p => [
       p.leadName || "",
-      p.leadCity || "",
-      p.leadState || "",
+      p.leadLocation || "",
       establishmentTypeLabels[p.establishmentType || ""] || "",
       new Date(p.createdAt).toLocaleDateString("pt-BR"),
     ]);
@@ -204,7 +203,7 @@ export default function Leads() {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {prospect.leadCity || "?"}, {prospect.leadState || "?"}
+                            {prospect.leadLocation || "Localiza\u00e7\u00e3o n\u00e3o informada"}
                           </span>
                           <span className="flex items-center gap-1">
                             <Building2 className="h-3 w-3" />

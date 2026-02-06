@@ -9,8 +9,7 @@ export const leadsRouter = router({
       sessionId: z.string(),
       isExistingCustomer: z.boolean(),
       leadName: z.string().optional(),
-      leadCity: z.string().optional(),
-      leadState: z.string().length(2).optional(),
+      leadLocation: z.string().optional(), // Formato: "Cidade - Estado"
       establishmentType: z.enum([
         "supermercado",
         "cafeteria",
@@ -63,9 +62,11 @@ export const leadsRouter = router({
       return acc;
     }, {} as Record<string, number>);
     
-    // Agrupar por estado
+    // Agrupar por localização (estado extraído de leadLocation)
     const byState = prospects.reduce((acc, conv) => {
-      const state = conv.leadState || "não_informado";
+      // Extrair estado de "Cidade - Estado" (pega a parte depois do "-")
+      const location = conv.leadLocation || "";
+      const state = location.includes("-") ? location.split("-")[1].trim() : "não_informado";
       acc[state] = (acc[state] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);

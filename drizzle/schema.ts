@@ -32,8 +32,7 @@ export const conversations = mysqlTable("conversations", {
   // Campos de qualificação
   isExistingCustomer: boolean("isExistingCustomer"),
   leadName: varchar("leadName", { length: 255 }),
-  leadCity: varchar("leadCity", { length: 100 }),
-  leadState: varchar("leadState", { length: 2 }),
+  leadLocation: varchar("leadLocation", { length: 150 }), // Formato: "Cidade - Estado"
   establishmentType: mysqlEnum("establishmentType", [
     "supermercado",
     "cafeteria",

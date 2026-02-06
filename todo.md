@@ -192,3 +192,8 @@
 ## Bug Reportado - Parser de Data Simples
 
 - [x] Parser de data não reconhece formato simples "13/02" - precisa aceitar datas sem palavras adicionais como "dia", "às", etc.
+
+
+## Melhoria Solicitada - Fluxo de Qualificação de Prospects
+
+- [x] Simplificar coleta de localização: pedir "Cidade - Estado" em uma única pergunta ao invés de separar em Cidade e Estado (siglas não estão sendo reconhecidas corretamente)
