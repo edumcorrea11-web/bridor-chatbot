@@ -56,7 +56,7 @@ export const appRouter = router({
         const welcomeMessage = await createMessage({
           conversationId: conversation.id,
           sender: "bot",
-          content: "Olá! Bem-vindo à Bridor! 👋\n\nSou seu assistente virtual e estou aqui para ajudar.\n\nPara começar, me conta: você já é cliente da Bridor?\n\nResponda \"sim\" ou \"não\" para continuar!",
+          content: "Bonjour! Bem-vindo à Bridor! 👋🇫🇷\n\nSou seu assistente virtual e estou aqui para ajudar.\n\nPara começar, me conta: você já é cliente da Bridor?\n\nResponda \"sim\" ou \"não\" para continuar!",
           messageType: "menu",
         });
 
@@ -99,7 +99,7 @@ export const appRouter = router({
         // Preparar contexto para o LLM
         const systemPrompt = `Você é um assistente virtual da Bridor, empresa especializada em panificação, confeitaria e food service.
 
-FLUXO DE QUALIFICAÇÃO:1. PRIMEIRA PERGUNTA: "Você já é cliente da Bridor?"\n   - Se SIM (resposta contendo "sim", "já sou", "sou cliente" ou similar): Cliente Existente → IMEDIATAMENTE oferecer menu:\n     "Que ótimo! Como posso te ajudar hoje?\n     📦 Digite \"pedido\" para fazer um pedido\n     👩‍💼 Digite \"assistente\" para falar com nossa equipe de vendas"\n   - Se NÃO (resposta contendo "não", "ainda não", "não sou" ou similar): Prospect → Coletar dados: Nome, Cidade, Estado, Tipo de Estabeleci2. PARA CLIENTES EXISTENTES:\n   IMPORTANTE: Aceite respostas naturais como "pedido", "fazer pedido", "quero fazer pedido" ou "assistente", "falar com assistente".\n   \n   - Se resposta contiver "pedido" ou "fazer pedido": Iniciar fluxo de pedido:
+FLUXO DE QUALIFICAÇÃO:1. PRIMEIRA PERGUNTA: "Você já é cliente da Bridor?"\n   - Se SIM (resposta contendo "sim", "já sou", "sou cliente" ou similar): Cliente Existente → IMEDIATAMENTE oferecer menu:\n     "Magnifique! Como posso te ajudar hoje?\n     📦 Digite \"pedido\" para fazer um pedido\n     👩‍💼 Digite \"assistente\" para falar com nossa equipe de vendas"\n   - Se NÃO (resposta contendo "não", "ainda não", "não sou" ou similar): Prospect → Responder com "Enchanté!" e coletar dados: Nome, Cidade, Estado, Tipo de Estabeleci2. PARA CLIENTES EXISTENTES:\n   IMPORTANTE: Aceite respostas naturais como "pedido", "fazer pedido", "quero fazer pedido" ou "assistente", "falar com assistente".\n   \n   - Se resposta contiver "pedido" ou "fazer pedido": Iniciar fluxo de pedido:
      a) PRIMEIRO, perguntar: "Para localizar seu cadastro, por favor me informe o nome do seu estabelecimento ou CNPJ"
      b) Após receber a identificação, pedir o pedido no formato:
         "Perfeito! Agora envie seu pedido com as seguintes informações:
@@ -162,7 +162,7 @@ Diretrizes:
           // Prospect completou qualificação - extrair dados da conversa
           botResponse = botResponse.replace("QUALIFICACAO_COMPLETA", "").trim();
           if (!botResponse) {
-            botResponse = "✅ Obrigado pelas informações! Seu cadastro foi realizado com sucesso.\n\nGostaria de receber nosso catálogo completo de produtos? Digite 'sim' para receber!";
+            botResponse = "✅ Merci! Seus dados foram registrados com sucesso. 🇫🇷\n\nGostaria de receber nosso catálogo completo de produtos? Digite 'sim' para receber!";
           }
           
           // Extrair dados do histórico de mensagens
@@ -227,7 +227,7 @@ Diretrizes:
         } else if (botResponse.includes("ENVIAR_CATALOGO")) {
           const catalogs = await getAllActiveCatalogs();
           if (catalogs.length > 0) {
-            botResponse = `📋 Aqui está nosso catálogo de produtos:\n\n${catalogs.map((c, i) => 
+            botResponse = `📋 Voilà! Aqui está nosso catálogo de produtos:\n\n${catalogs.map((c, i) => 
               `${i + 1}. ${c.name}\n${c.description || ''}\n🔗 ${c.fileUrl}`
             ).join('\n\n')}\n\nPosso ajudar com mais alguma coisa?`;
             messageType = "catalog";
@@ -349,7 +349,7 @@ Diretrizes:
           }
           
           // Criar resumo formatado do pedido
-          const orderSummary = `✅ Pedido recebido com sucesso!\n\n📝 RESUMO DO PEDIDO:\n${orderInfo}\n\nVou transferir você para Maria Luiza que vai confirmar seu pedido e enviar o espelho pelo WhatsApp. Aguarde um momento... 👩‍💼`;
+          const orderSummary = `✅ Parfait! Pedido recebido com sucesso!\n\n📝 RESUMO DO PEDIDO:\n${orderInfo}\n\nVou transferir você para Maria Luiza que vai confirmar seu pedido e enviar o espelho pelo WhatsApp. Aguarde um momento... À bientôt! 👩‍💼`;
           
           if (!botResponse) {
             botResponse = orderSummary;
@@ -371,7 +371,7 @@ Diretrizes:
             orderDeliveryDate: dataEntrega || null,
           });
         } else if (botResponse.includes("TRANSFERIR_ATENDENTE")) {
-          botResponse = "Perfeito! Vou transferir você para Maria Luiza, nossa assistente de vendas, que vai te atender. Aguarde um momento... 👩‍💼";
+          botResponse = "Perfeito! Vou transferir você para Maria Luiza, nossa assistente de vendas, que vai te atender. Aguarde um momento... À bientôt! 👩‍💼";
           messageType = "system";
           newCategory = "order";
           shouldUpdateCategory = true;

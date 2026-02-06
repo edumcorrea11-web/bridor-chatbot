@@ -197,3 +197,15 @@
 ## Melhoria Solicitada - Fluxo de Qualificação de Prospects
 
 - [x] Simplificar coleta de localização: pedir "Cidade - Estado" em uma única pergunta ao invés de separar em Cidade e Estado (siglas não estão sendo reconhecidas corretamente)
+
+
+## Personalização Francesa do Chatbot
+
+- [x] Adicionar "Bonjour!" na mensagem de boas-vindas
+- [x] Substituir "Que ótimo!" por "Magnifique!" para clientes existentes
+- [x] Substituir "Entendido!" por "Enchanté!" no início de qualificação
+- [x] Substituir "Obrigado" por "Merci!" na confirmação de cadastro
+- [x] Adicionar "Voilà!" antes de "Aqui está nosso catálogo"
+- [x] Substituir "Pedido recebido com sucesso!" por "Parfait! Pedido recebido com sucesso!"
+- [x] Adicionar "À bientôt!" na despedida/transferência
+- [x] Adicionar emoji 🇫🇷 em mensagens estratégicas
